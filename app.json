@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "AutoGo Partners",
+    "slug": "autogo-service-providers",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A1520"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.autogo.partners"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A1520"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.autogo.partners"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "AutoGo Partners needs your location to assign jobs near you."
+        }
+      ],
+      "expo-secure-store"
+    ]
+  }
+}
