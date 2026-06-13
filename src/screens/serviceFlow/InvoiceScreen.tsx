@@ -280,7 +280,10 @@ const InvoiceScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const [isFinishing, setIsFinishing] = useState(false);
 
+  const finishLock = useRef(false);
   const handleFinishService = async () => {
+    if (finishLock.current) return;
+    finishLock.current = true;
     setIsFinishing(true);
     try {
       const orderId = order?.orderId || order?.id;
@@ -312,6 +315,7 @@ const InvoiceScreen: React.FC<Props> = ({ navigation, route }) => {
       });
     } finally {
       setIsFinishing(false);
+      finishLock.current = false;
     }
   };
 

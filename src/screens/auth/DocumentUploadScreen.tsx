@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -43,6 +43,8 @@ const DocumentUploadScreen: React.FC<Props> = ({ navigation, route }) => {
   const dispatch = useAppDispatch();
   const insets = useSafeAreaInsets();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Synchronous lock to stop double-tap creating two register/login attempts.
+  const submitLock = useRef(false);
 
   const [documents, setDocuments] = useState<DocumentItem[]>(
     isWinch
@@ -172,10 +174,14 @@ const DocumentUploadScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleSubmit = async () => {
+    if (submitLock.current) return;
+
     if (!allUploaded) {
       Alert.alert('تنبيه', 'لازم ترفع كل المستندات المطلوبة');
       return;
     }
+
+    submitLock.current = true;
 
     if (!isWinch) {
       dispatch(
@@ -226,6 +232,7 @@ const DocumentUploadScreen: React.FC<Props> = ({ navigation, route }) => {
       Alert.alert('خطأ', message);
     } finally {
       setIsSubmitting(false);
+      submitLock.current = false;
     }
   };
 

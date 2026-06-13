@@ -31,7 +31,9 @@ const RequestAcceptScreen: React.FC<Props> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const [submitting, setSubmitting] = React.useState(false);
-  
+  // Synchronous lock: blocks rapid double-taps before `submitting` state re-renders.
+  const actionLock = useRef(false);
+
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(100)).current;
   const timerAnim = useRef(new Animated.Value(1)).current;
@@ -61,18 +63,27 @@ const RequestAcceptScreen: React.FC<Props> = ({ navigation, route }) => {
   }, []);
 
   const handleAccept = async () => {
-    if (submitting) return;
+    if (actionLock.current) return;
+    actionLock.current = true;
     setSubmitting(true);
-    const result = await dispatch(acceptWinchOrder(job.id));
-    setSubmitting(false);
-    if (acceptWinchOrder.rejected.match(result)) {
-      Alert.alert('تعذر قبول الطلب', String(result.payload || 'حاول مرة أخرى'));
-      return;
+    try {
+      const result = await dispatch(acceptWinchOrder(job.id));
+      if (acceptWinchOrder.rejected.match(result)) {
+        Alert.alert('تعذر قبول الطلب', String(result.payload || 'حاول مرة أخرى'));
+        actionLock.current = false;
+        setSubmitting(false);
+        return;
+      }
+      navigation.replace('ActiveJob', { jobId: job.id, job });
+    } catch {
+      actionLock.current = false;
+      setSubmitting(false);
     }
-    navigation.replace('ActiveJob', { jobId: job.id, job });
   };
 
   const handleReject = () => {
+    if (actionLock.current) return;
+    actionLock.current = true;
     if (job.id) dispatch(rejectWinchOrder(job.id));
     navigation.goBack();
   };

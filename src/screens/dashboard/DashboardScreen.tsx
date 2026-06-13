@@ -37,6 +37,8 @@ const DashboardScreen: React.FC<Props> = ({ navigation }) => {
   const isOnline = provider?.isOnline || false;
   const isWinch = role === 'winch_driver';
   const insets = useSafeAreaInsets();
+  // Synchronous lock to prevent double-tap accepting the same booking twice.
+  const acceptLockRef = useRef(false);
 
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
@@ -102,9 +104,15 @@ const DashboardScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    const result = await dispatch(updateWorkshopOrderStatus({ orderId: booking.id, status: 'confirmed' }));
-    if (updateWorkshopOrderStatus.fulfilled.match(result)) {
-      navigation?.navigate('CarReception', { bookingId: booking.id });
+    if (acceptLockRef.current) return;
+    acceptLockRef.current = true;
+    try {
+      const result = await dispatch(updateWorkshopOrderStatus({ orderId: booking.id, status: 'confirmed' }));
+      if (updateWorkshopOrderStatus.fulfilled.match(result)) {
+        navigation?.navigate('CarReception', { bookingId: booking.id });
+      }
+    } finally {
+      acceptLockRef.current = false;
     }
   };
 

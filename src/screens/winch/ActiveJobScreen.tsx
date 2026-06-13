@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -36,7 +36,12 @@ const ActiveJobScreen: React.FC<Props> = ({ navigation, route }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [photoTaken, setPhotoTaken] = useState(false);
 
+  const stepLock = useRef(false);
   const handleNextStep = () => {
+    if (stepLock.current) return;
+    stepLock.current = true;
+    setTimeout(() => { stepLock.current = false; }, 500);
+
     if (currentStep === 2 && !photoTaken) {
       // Need photo before proceeding
       setPhotoTaken(true); // Mock: simulate photo capture

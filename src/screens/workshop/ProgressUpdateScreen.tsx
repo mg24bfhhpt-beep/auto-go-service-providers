@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -110,22 +110,30 @@ const ProgressUpdateScreen: React.FC<Props> = ({ navigation, route }) => {
     setTimeout(() => setQuotationApproved(true), 2000);
   };
 
+  const completeLock = useRef(false);
   const handleStatusUpdate = async () => {
     if (currentStatus < STATUSES.length - 1) {
       setCurrentStatus(currentStatus + 1);
       return;
     }
 
-    if (bookingId) {
-      const result = await dispatch(updateWorkshopOrderStatus({ orderId: bookingId, status: 'completed' }));
-      if (updateWorkshopOrderStatus.rejected.match(result)) {
-        Alert.alert('خطأ', String(result.payload || 'فشل إكمال الحجز'));
-        return;
+    if (completeLock.current) return;
+    completeLock.current = true;
+    try {
+      if (bookingId) {
+        const result = await dispatch(updateWorkshopOrderStatus({ orderId: bookingId, status: 'completed' }));
+        if (updateWorkshopOrderStatus.rejected.match(result)) {
+          Alert.alert('خطأ', String(result.payload || 'فشل إكمال الحجز'));
+          completeLock.current = false;
+          return;
+        }
       }
-    }
 
-    Alert.alert('تم بنجاح', 'السيارة جاهزة! تم إبلاغ العميل.');
-    navigation.popToTop();
+      Alert.alert('تم بنجاح', 'السيارة جاهزة! تم إبلاغ العميل.');
+      navigation.popToTop();
+    } catch {
+      completeLock.current = false;
+    }
   };
 
   return (

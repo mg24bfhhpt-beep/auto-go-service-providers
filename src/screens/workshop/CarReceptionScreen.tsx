@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -51,11 +51,18 @@ const CarReceptionScreen: React.FC<Props> = ({ navigation, route }) => {
     setPhotos((prev) => ({ ...prev, [side]: true }));
   };
 
+  const submitLock = useRef(false);
   const handleSubmit = async () => {
-    if (bookingId) {
-      await dispatch(updateWorkshopOrderStatus({ orderId: bookingId, status: 'in_progress' }));
+    if (submitLock.current) return;
+    submitLock.current = true;
+    try {
+      if (bookingId) {
+        await dispatch(updateWorkshopOrderStatus({ orderId: bookingId, status: 'in_progress' }));
+      }
+      navigation.navigate('ProgressUpdate', { bookingId });
+    } finally {
+      submitLock.current = false;
     }
-    navigation.navigate('ProgressUpdate', { bookingId });
   };
 
   return (
